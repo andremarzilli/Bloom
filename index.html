@@ -24,12 +24,14 @@
             overflow: hidden;
             background-color: #040407;
             color: #f2f5fa;
+            touch-action: none; /* Fondamentale per bloccare lo scroll e i gesti di default su mobile */
         }
 
         canvas {
             display: block;
             width: 100%;
             height: 100%;
+            touch-action: none;
         }
 
         #ui-layer {
@@ -483,7 +485,8 @@
 
         function initAudio() {
             if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContextClass();
                 
                 compressorNode = audioCtx.createDynamicsCompressor();
                 compressorNode.threshold.setValueAtTime(-12, audioCtx.currentTime);
@@ -789,7 +792,6 @@
                 this.lastEchoTriggerTime = 0;
                 this.trailCounter = 0;
 
-                // Generazione infinita e unica di pattern particellari "fumo/alone" specchiati
                 this.uniqueSeed = Math.random() * 1000;
                 this.smokeParticlesCount = 14 + Math.floor(Math.random() * 10);
                 this.smokePuffs = [];
@@ -931,11 +933,9 @@
                 }
             }
 
-            // Aloni particellari a fumo / nebulosa specchiati e unici per ogni nota
             drawSmokeHalos() {
                 let intensity = this.getLightIntensity();
                 
-                // Disegna aloni specchiati/riflessi secondari
                 this.reflectionMirrors.forEach((mirror, idx) => {
                     let mirrorAlpha = (0.015 + intensity * 0.04) * (idx === 0 ? 1.0 : 0.7);
                     
@@ -962,7 +962,6 @@
             draw() {
                 let intensity = this.getLightIntensity();
                 
-                // Disegna aloni di fumo attorno alla nota principale
                 ctx.save();
                 this.smokePuffs.forEach((puff, pIdx) => {
                     let pulse = Math.sin(waveOffset * puff.speed + puff.angleOffset + this.uniqueSeed) * 6;
@@ -1044,7 +1043,6 @@
 
         function addParticle(x, y) {
             initAudio();
-            // Limite massimo di 6 forme/note. La 7a fa slittare e distrugge la prima (retrigger/FIFO)
             if (particles.length >= 6) {
                 let oldest = particles.shift();
                 oldest.destroy();
@@ -1294,7 +1292,6 @@
 
             waveOffset += 0.012;
 
-            // 1. Disegna gli aloni di fumo/nebulosa specchiati legati a ciascuna nota
             particles.forEach(p => {
                 p.drawSmokeHalos();
             });
